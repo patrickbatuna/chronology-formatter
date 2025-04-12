@@ -1,5 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
-  // DOM elements - Main components
+  // ---------------------------------------------------------------------------
+  // Main Form Components: Get references to primary form elements and inputs
+  // ---------------------------------------------------------------------------
   const form = document.getElementById("formatterForm");
   const incidentStatusSelect = document.getElementById("incidentStatus");
   const issueTitleInput = document.getElementById("issueTitle");
@@ -14,7 +16,9 @@ document.addEventListener("DOMContentLoaded", function () {
   const autoSortToggle = document.getElementById("autoSortToggle");
   const timeStatusSelect = document.getElementById("timeStatus");
 
-  // End time span midnight
+  // ---------------------------------------------------------------------------
+  // End Time & Midnight Handling: Elements for handling incidents spanning midnight
+  // ---------------------------------------------------------------------------
   const spansMidnightCheckbox = document.getElementById("spansMidnight");
   const endDateContainer = document.getElementById("endDateContainer");
   const endDateInput = document.getElementById("endDate");
@@ -22,7 +26,9 @@ document.addEventListener("DOMContentLoaded", function () {
     "label[for='endTime']"
   ).parentElement;
 
-  // Service Impact & Action Taken Reference
+  // ---------------------------------------------------------------------------
+  // Service Impact and Action Taken Sections: Input and preview elements
+  // ---------------------------------------------------------------------------
   const serviceImpactText = document.getElementById("serviceImpactText");
   const actionTakenText = document.getElementById("actionTakenText");
   const addServiceImpact = document.getElementById("addServiceImpact");
@@ -30,14 +36,18 @@ document.addEventListener("DOMContentLoaded", function () {
   const serviceImpactPreview = document.getElementById("serviceImpactPreview");
   const actionTakenPreview = document.getElementById("actionTakenPreview");
 
-  // Arrays to store service impact and action taken entries
+  // Arrays to store entries for service impact and action taken
   let serviceImpactEntries = [];
   let actionTakenEntries = [];
 
-  // DOM elements - Dark Mode
+  // ---------------------------------------------------------------------------
+  // Dark Mode: Get the dark mode toggle element
+  // ---------------------------------------------------------------------------
   const darkModeToggle = document.getElementById("darkModeToggle");
 
-  // DOM elements - Quick Actions
+  // ---------------------------------------------------------------------------
+  // Quick Actions & Timeline: Elements for quick timeline entries and actions
+  // ---------------------------------------------------------------------------
   const quickActionText = document.getElementById("quickActionText");
   const quickActionTime = document.getElementById("quickActionTime");
   const statusInProgress = document.getElementById("statusInProgress");
@@ -47,7 +57,9 @@ document.addEventListener("DOMContentLoaded", function () {
   const chronologyPreview = document.getElementById("chronologyPreview");
   const nextDayToggle = document.getElementById("nextDayToggle");
 
-  // DOM elements - Edit Entry Modal
+  // ---------------------------------------------------------------------------
+  // Edit Entry Modal: Elements for editing a timeline entry
+  // ---------------------------------------------------------------------------
   const editEntryModal = document.getElementById("editEntryModal");
   const editEntryTime = document.getElementById("editEntryTime");
   const editEntryText = document.getElementById("editEntryText");
@@ -60,7 +72,9 @@ document.addEventListener("DOMContentLoaded", function () {
   const cancelEditEntry = document.getElementById("cancelEditEntry");
   const refreshEditTimeBtn = document.getElementById("refreshEditTimeBtn");
 
-  // DOM elements - Import/Reset
+  // ---------------------------------------------------------------------------
+  // Import & Reset: Elements for importing reports and resetting the form
+  // ---------------------------------------------------------------------------
   const resetButton = document.getElementById("resetButton");
   const importButton = document.getElementById("importButton");
   const importModal = document.getElementById("importModal");
@@ -68,24 +82,30 @@ document.addEventListener("DOMContentLoaded", function () {
   const cancelImport = document.getElementById("cancelImport");
   const confirmImport = document.getElementById("confirmImport");
 
-  // DOM elements - Chronology Modal
+  // ---------------------------------------------------------------------------
+  // Chronology Modal: Elements for managing the timeline chronology
+  // ---------------------------------------------------------------------------
   const chronologyButton = document.getElementById("chronologyButton");
   const chronologyModal = document.getElementById("chronologyModal");
   const closeChronologyModal = document.getElementById("closeChronologyModal");
   const saveChronology = document.getElementById("saveChronology");
   const cancelChronology = document.getElementById("cancelChronology");
 
-  // Set current date and initialize default values
+  // ---------------------------------------------------------------------------
+  // Default Values: Set the current date and time for initial field values
+  // ---------------------------------------------------------------------------
   const now = new Date();
   const formattedDate = now.toISOString().split("T")[0];
   const currentHours = String(now.getHours()).padStart(2, "0");
   const currentMinutes = String(now.getMinutes()).padStart(2, "0");
   const currentTime = `${currentHours}:${currentMinutes}`;
 
-  // Store chronology entries for easier manipulation
+  // Array to store timeline chronology entries
   let chronologyEntries = [];
 
-  // Updated time status dropdown handler without nextDay markers
+  // ---------------------------------------------------------------------------
+  // Time Status Selection: Handle changes in the time status dropdown
+  // ---------------------------------------------------------------------------
   timeStatusSelect.addEventListener("change", function () {
     const selectedOption = this.value;
 
@@ -97,7 +117,7 @@ document.addEventListener("DOMContentLoaded", function () {
       endTimeInput.disabled = true;
       spansMidnightCheckbox.disabled = true;
 
-      // Update end time based on entries
+      // Set end time based on the latest timeline entry
       updateEndTimeFromLatestEntry();
     } else {
       endTimeSection.classList.remove("hidden");
@@ -111,16 +131,16 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }
 
-    // Update chronology based on time sequence
+    // Update timeline next-day flags, preview, and save the state
     updateNextDayBasedOnTimeSequence();
-
-    // Ensure the timeline preview is updated correctly
     updateChronologyPreview();
     formatAndPreview();
     saveFormValues();
   });
 
-  // Dark mode toggle functionality
+  // ---------------------------------------------------------------------------
+  // Dark Mode Initialization and Toggle
+  // ---------------------------------------------------------------------------
   function initializeDarkMode() {
     const isDarkMode = localStorage.getItem("darkMode") === "true";
     if (isDarkMode) {
@@ -138,7 +158,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
   initializeDarkMode();
 
-  // Chronology modal handlers
+  // ---------------------------------------------------------------------------
+  // Chronology Modal Handlers: Open and close the modal for editing timeline
+  // ---------------------------------------------------------------------------
   chronologyButton.addEventListener("click", function () {
     chronologyModal.classList.remove("hidden");
   });
@@ -151,7 +173,9 @@ document.addEventListener("DOMContentLoaded", function () {
     chronologyModal.classList.add("hidden");
   });
 
-  // Spans midnight checkbox listener
+  // ---------------------------------------------------------------------------
+  // Midnight Span Handling: Adjust UI when the incident spans midnight
+  // ---------------------------------------------------------------------------
   spansMidnightCheckbox.addEventListener("change", function () {
     if (this.checked) {
       endDateContainer.classList.remove("hidden");
@@ -164,6 +188,10 @@ document.addEventListener("DOMContentLoaded", function () {
     debouncedFormat();
   });
 
+  // ---------------------------------------------------------------------------
+  // Save Chronology Modal: Parse and save timeline entries, update end time if
+  // necessary, then provide feedback upon successful update.
+  // ---------------------------------------------------------------------------
   saveChronology.addEventListener("click", function () {
     parseChronologyInput();
     updateChronologyPreview();
@@ -188,7 +216,10 @@ document.addEventListener("DOMContentLoaded", function () {
     }, 1500);
   });
 
-  // Updated parseChronologyInput to detect nextDay based on time ordering
+  // ---------------------------------------------------------------------------
+  // Parse Chronology Input: Convert entered timeline text into structured data
+  // and automatically detect entries that belong to the next day.
+  // ---------------------------------------------------------------------------
   function parseChronologyInput() {
     const chronologyText = chronologiesInput.value.trim();
     chronologyEntries = [];
@@ -199,16 +230,15 @@ document.addEventListener("DOMContentLoaded", function () {
       .map((line) => line.trim())
       .filter((line) => line !== "");
 
-    // Parse entries first
     if (
       lines.length &&
       lines[0].startsWith("-----") &&
       lines[0].endsWith("-----")
     ) {
-      // Chat transcript format parsing
-      // ...existing chat transcript parsing code...
+      // Placeholder for chat transcript style parsing
+      // (Existing parsing code for transcript format can be inserted here)
     } else {
-      // Standard timeline format parsing
+      // Standard timeline format: Parse lines in the format "HH:MM → message"
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
         const timelineMatch = line.match(/^(\d{1,2}:\d{2})\s*→\s*(.+)$/);
@@ -218,7 +248,7 @@ document.addEventListener("DOMContentLoaded", function () {
           let message = fullText;
           let hidden = false;
 
-          // Remove any existing [NEXT_DAY] markers (we'll detect them automatically)
+          // Remove any explicit NEXT_DAY markers (they are detected automatically)
           if (fullText.includes("[NEXT_DAY]")) {
             fullText = fullText.replace(/\[NEXT_DAY\]/g, "").trim();
           }
@@ -241,17 +271,19 @@ document.addEventListener("DOMContentLoaded", function () {
             message: message,
             status: status,
             hidden: hidden,
-            nextDay: false, // We'll set this based on time sequence later
+            nextDay: false, // Will be set in nextDay detection
           });
         }
       }
     }
 
-    // After parsing all entries, update nextDay flags based on time sequence
+    // Automatically update nextDay flags for timeline entries
     updateNextDayBasedOnTimeSequence();
   }
 
-  // Set current time as default for quick action
+  // ---------------------------------------------------------------------------
+  // Quick Action Time: Initialize the quick action time field with current time
+  // ---------------------------------------------------------------------------
   function updateQuickActionTime() {
     const now = new Date();
     const hours = String(now.getHours()).padStart(2, "0");
@@ -259,7 +291,9 @@ document.addEventListener("DOMContentLoaded", function () {
     quickActionTime.value = `${hours}:${minutes}`;
   }
 
-  // Update edit entry time field to current time
+  // ---------------------------------------------------------------------------
+  // Update Edit Time: Set the edit entry modal time to the current time
+  // ---------------------------------------------------------------------------
   function updateEditEntryTime() {
     const now = new Date();
     const hours = String(now.getHours()).padStart(2, "0");
@@ -272,7 +306,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }, 500);
   }
 
-  // Entry system for Service Impact
+  // ---------------------------------------------------------------------------
+  // Service Impact Preview: Update the service impact preview section
+  // ---------------------------------------------------------------------------
   function updateServiceImpactPreview() {
     if (serviceImpactEntries.length === 0) {
       serviceImpactPreview.innerHTML =
@@ -315,28 +351,27 @@ document.addEventListener("DOMContentLoaded", function () {
     serviceImpactPreview.innerHTML = previewHTML;
   }
 
-  // New function to update nextDay flags based on time sequence
+  // ---------------------------------------------------------------------------
+  // Timeline Next-Day Flag Update: Set the nextDay flag for timeline entries
+  // based on their time order.
+  // ---------------------------------------------------------------------------
   function updateNextDayBasedOnTimeSequence() {
     if (chronologyEntries.length <= 1) return;
 
-    // Sort entries by time first (but don't change their order in the array)
     const sortableEntries = [...chronologyEntries].filter(
       (entry) => !entry.hidden
     );
 
-    // Set nextDay flags based on time sequence
     let prevTimeMinutes = -1;
     let currentDayEntries = [];
     let nextDayEntries = [];
 
-    // First pass: identify day transitions
+    // Detect when time values reset (indicating a new day)
     for (let i = 0; i < sortableEntries.length; i++) {
       const entry = sortableEntries[i];
       const currentTimeMinutes = timeToMinutes(entry.time);
 
-      // If time goes backward (e.g., 23:00 → 01:00), it's a new day
       if (prevTimeMinutes !== -1 && currentTimeMinutes < prevTimeMinutes) {
-        // All subsequent entries are next day
         nextDayEntries = sortableEntries.slice(i);
         currentDayEntries = sortableEntries.slice(0, i);
         break;
@@ -345,12 +380,9 @@ document.addEventListener("DOMContentLoaded", function () {
       prevTimeMinutes = currentTimeMinutes;
     }
 
-    // Second pass: update the actual entries with nextDay flags
+    // Update each entry's nextDay flag accordingly
     chronologyEntries.forEach((entry) => {
-      // Reset the nextDay flag
       entry.nextDay = false;
-
-      // If this entry is in the nextDayEntries list, mark it
       if (
         nextDayEntries.find(
           (e) => e.time === entry.time && e.message === entry.message
@@ -361,7 +393,9 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // Entry system for Action Taken
+  // ---------------------------------------------------------------------------
+  // Action Taken Preview: Update the action taken preview section
+  // ---------------------------------------------------------------------------
   function updateActionTakenPreview() {
     if (actionTakenEntries.length === 0) {
       actionTakenPreview.innerHTML =
@@ -404,7 +438,9 @@ document.addEventListener("DOMContentLoaded", function () {
     actionTakenPreview.innerHTML = previewHTML;
   }
 
-  // Add service impact entry
+  // ---------------------------------------------------------------------------
+  // Add Service Impact Entry: Append a new service impact entry to the list
+  // ---------------------------------------------------------------------------
   function addServiceImpactEntry() {
     const impactText = serviceImpactText.value.trim();
     if (!impactText) {
@@ -430,7 +466,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }, 1500);
   }
 
-  // Add action taken entry
+  // ---------------------------------------------------------------------------
+  // Add Action Taken Entry: Append a new action taken entry to the list
+  // ---------------------------------------------------------------------------
   function addActionTakenEntry() {
     const actionText = actionTakenText.value.trim();
     if (!actionText) {
@@ -456,7 +494,10 @@ document.addEventListener("DOMContentLoaded", function () {
     }, 1500);
   }
 
-  // Service impact entries listeners
+  // ---------------------------------------------------------------------------
+  // Service Impact Entry Actions: Delegate edit, toggle visibility, and delete
+  // actions for service impact entries.
+  // ---------------------------------------------------------------------------
   serviceImpactPreview.addEventListener("click", function (e) {
     if (e.target.closest(".edit-impact-btn")) {
       const button = e.target.closest(".edit-impact-btn");
@@ -488,7 +529,10 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  // Action taken entries listeners
+  // ---------------------------------------------------------------------------
+  // Action Taken Entry Actions: Delegate edit, toggle visibility, and delete
+  // actions for action taken entries.
+  // ---------------------------------------------------------------------------
   actionTakenPreview.addEventListener("click", function (e) {
     if (e.target.closest(".edit-action-btn")) {
       const button = e.target.closest(".edit-action-btn");
@@ -520,6 +564,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
+  // Attach entry addition events to respective buttons and keypress events
   addServiceImpact.addEventListener("click", addServiceImpactEntry);
   addActionTaken.addEventListener("click", addActionTakenEntry);
 
@@ -537,9 +582,14 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
+  // ---------------------------------------------------------------------------
+  // Initialize Quick Action Time with Current Time
+  // ---------------------------------------------------------------------------
   updateQuickActionTime();
 
-  // Initialize chronology preview
+  // ---------------------------------------------------------------------------
+  // Timeline Preview: Update the visual preview of the timeline chronology
+  // ---------------------------------------------------------------------------
   function updateChronologyPreview() {
     if (chronologyEntries.length === 0) {
       chronologyPreview.innerHTML =
@@ -596,7 +646,9 @@ document.addEventListener("DOMContentLoaded", function () {
     chronologyPreview.innerHTML = previewHTML;
   }
 
-  // Chronology preview actions using event delegation
+  // ---------------------------------------------------------------------------
+  // Timeline Entry Actions: Handle edit, visibility toggle, and deletion via delegation
+  // ---------------------------------------------------------------------------
   chronologyPreview.addEventListener("click", function (e) {
     if (e.target.closest(".edit-entry-btn")) {
       const button = e.target.closest(".edit-entry-btn");
@@ -613,7 +665,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  // Edit entry handler
+  // ---------------------------------------------------------------------------
+  // Edit Timeline Entry: Open the edit modal and populate fields with entry data
+  // ---------------------------------------------------------------------------
   function handleEditEntry(index) {
     const entry = chronologyEntries[index];
     if (!entry) return;
@@ -633,7 +687,9 @@ document.addEventListener("DOMContentLoaded", function () {
     editEntryModal.classList.remove("hidden");
   }
 
-  // Toggle entry visibility
+  // ---------------------------------------------------------------------------
+  // Toggle Timeline Entry Visibility: Show or hide a timeline entry
+  // ---------------------------------------------------------------------------
   function handleToggleVisibility(index) {
     const entry = chronologyEntries[index];
     if (!entry) return;
@@ -649,39 +705,23 @@ document.addEventListener("DOMContentLoaded", function () {
     saveFormValues();
   }
 
-  // Improved function to update end time from latest entry
-  function updateEndTimeFromLatestEntry() {
-    const visibleEntries = chronologyEntries.filter((entry) => !entry.hidden);
-    if (visibleEntries.length > 0) {
-      const lastEntry = visibleEntries[visibleEntries.length - 1];
-      endTimeInput.value = lastEntry.time;
-
-      if (lastEntry.nextDay) {
-        const nextDate = new Date(incidentDateInput.value);
-        nextDate.setDate(nextDate.getDate() + 1);
-        endDateInput.value = nextDate.toISOString().split("T")[0];
-        spansMidnightCheckbox.checked = true;
-        endDateContainer.classList.remove("hidden");
-      } else {
-        spansMidnightCheckbox.checked = false;
-        endDateContainer.classList.add("hidden");
-      }
-    }
-  }
-
+  // ---------------------------------------------------------------------------
+  // Delete Timeline Entry: Remove a timeline entry after user confirmation
+  // ---------------------------------------------------------------------------
   function handleDeleteEntry(index) {
     if (confirm("Are you sure you want to delete this entry?")) {
       chronologyEntries.splice(index, 1);
       updateChronologyPreview();
       updateChronologyInput();
-      // Always update the end time with the latest timestamp from visible entries
       updateEndTimeFromLatestEntry();
       formatAndPreview();
       saveFormValues();
     }
   }
 
-  // Save edited entry – ensures any "[NEXT_DAY]" markers are removed and auto-sorts if needed
+  // ---------------------------------------------------------------------------
+  // Save Edited Timeline Entry: Apply changes from the edit modal and sort if needed
+  // ---------------------------------------------------------------------------
   function saveEditedEntry() {
     const index = parseInt(editEntryIndex.value);
     const entry = chronologyEntries[index];
@@ -723,18 +763,20 @@ document.addEventListener("DOMContentLoaded", function () {
     editEntryModal.classList.add("hidden");
   }
 
-  // Updated updateChronologyInput to NOT add "[NEXT_DAY]" markers
+  // ---------------------------------------------------------------------------
+  // Update Chronology Input: Convert structured timeline entries back into text
+  // ---------------------------------------------------------------------------
   function updateChronologyInput() {
     let result = "";
     for (const entry of chronologyEntries) {
       let entryText = `${entry.time} → ${entry.message}`;
 
-      // Add status marker if present
+      // Append status marker if available
       if (entry.status) {
         entryText += ` ${entry.status}`;
       }
 
-      // Add HIDDEN marker if needed
+      // Append hidden marker if applicable
       if (entry.hidden) {
         entryText += " [HIDDEN]";
       }
@@ -749,7 +791,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  // Status checkbox exclusivity
+  // ---------------------------------------------------------------------------
+  // Status Checkbox Exclusivity: Ensure only one status checkbox is selected at a time
+  // ---------------------------------------------------------------------------
   statusInProgress.addEventListener("change", function () {
     if (this.checked && statusDone.checked) {
       statusDone.checked = false;
@@ -761,7 +805,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  // Refresh time button
+  // ---------------------------------------------------------------------------
+  // Refresh Quick Action Time: Update the quick action time to the current time
+  // ---------------------------------------------------------------------------
   refreshTimeBtn.addEventListener("click", function () {
     updateQuickActionTime();
     this.classList.add("animate-pulse");
@@ -771,7 +817,9 @@ document.addEventListener("DOMContentLoaded", function () {
   });
   refreshEditTimeBtn.addEventListener("click", updateEditEntryTime);
 
-  // Add quick action to chronologies – using global replacement to remove any "[NEXT_DAY]"
+  // ---------------------------------------------------------------------------
+  // Add Quick Action to Timeline: Append a new quick entry to the chronology
+  // ---------------------------------------------------------------------------
   function addQuickActionToChronology() {
     let actionText = quickActionText.value.trim();
     if (!actionText) {
@@ -779,6 +827,7 @@ document.addEventListener("DOMContentLoaded", function () {
       quickActionText.focus();
       return;
     }
+    // Remove any preexisting NEXT_DAY markers since detection is automatic
     actionText = actionText.replace(/\[NEXT_DAY\]/gi, "").trim();
     const actionTime = quickActionTime.value;
     let status = "";
@@ -821,7 +870,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }, 1500);
   }
 
-  // Save form values to localStorage
+  // ---------------------------------------------------------------------------
+  // Save Form Values: Persist all form data to localStorage
+  // ---------------------------------------------------------------------------
   function saveFormValues() {
     const values = {
       incidentStatus: incidentStatusSelect.value,
@@ -841,7 +892,9 @@ document.addEventListener("DOMContentLoaded", function () {
     localStorage.setItem("incidentReportData", JSON.stringify(values));
   }
 
-  // Load form values from localStorage
+  // ---------------------------------------------------------------------------
+  // Load Form Values: Retrieve and populate saved form data from localStorage
+  // ---------------------------------------------------------------------------
   function loadFormValues() {
     const savedValues = localStorage.getItem("incidentReportData");
     if (savedValues) {
@@ -915,7 +968,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  // Reset function
+  // ---------------------------------------------------------------------------
+  // Reset Form: Clear all form fields and localStorage data
+  // ---------------------------------------------------------------------------
   function confirmReset() {
     if (
       confirm(
@@ -964,61 +1019,13 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
+  // ---------------------------------------------------------------------------
+  // Parse Formatted Report: Convert a formatted report string into a data object
+  // ---------------------------------------------------------------------------
   function parseFormattedReport(text) {
     try {
       text = text.replace(/\u00A0/g, " ").replace(/[\u2028\u2029]/g, "\n");
       const lines = text.split(/\r?\n/);
-
-      // Check for timeline-only import by counting matching lines
-      const timelinePattern = /^\d{1,2}:\d{2}\s*→\s*.+$/;
-      const nonEmptyLines = lines.filter((line) => line.trim() !== "");
-      const timelineMatches = nonEmptyLines.filter((line) =>
-        timelinePattern.test(line.trim())
-      );
-
-      // If most non-empty lines match the timeline pattern, assume a timeline-only import
-      if (
-        timelineMatches.length > 0 &&
-        timelineMatches.length >= nonEmptyLines.length * 0.7
-      ) {
-        let result = {
-          timelineOnly: true,
-          chronologyEntries: [],
-        };
-
-        nonEmptyLines.forEach((line) => {
-          const match = line.match(/^(\d{1,2}:\d{2})\s*→\s*(.+)$/);
-          if (match) {
-            const time = match[1];
-            let message = match[2].trim();
-            let status = "";
-            // Check for a status marker at the end, e.g., [Time], [Done] or [时间]
-            const statusMatch = message.match(/\[(Time|Done|时间)\]$/);
-            if (statusMatch) {
-              status =
-                statusMatch[1] === "时间" ? "[Time]" : `[${statusMatch[1]}]`;
-              message = message
-                .substring(0, message.length - statusMatch[0].length)
-                .trim();
-            }
-            result.chronologyEntries.push({
-              time: time,
-              message: message,
-              status: status,
-              hidden: false,
-              nextDay: false, // Will be updated later based on time sequence
-            });
-          }
-        });
-
-        if (result.chronologyEntries.length > 0) {
-          detectNextDayEntries(result.chronologyEntries);
-        }
-
-        return result;
-      }
-
-      // Full report parsing (standard import)
       let result = {
         status: "OPEN",
         issueTitle: "",
@@ -1057,11 +1064,13 @@ document.addEventListener("DOMContentLoaded", function () {
             const startMatch = startPart.match(
               /(\d+)\s+(\w+)\s+(\d{4}),\s+(\d{1,2}:\d{2}(?:\s*(?:AM|PM))?)/i
             );
+
             if (startMatch) {
               const startDay = startMatch[1].padStart(2, "0");
               const startMonth = startMatch[2];
               const startYear = startMatch[3];
               const startTime = startMatch[4];
+
               result.date = `${startYear}-${getMonthNumber(
                 startMonth
               )}-${startDay}`;
@@ -1087,10 +1096,12 @@ document.addEventListener("DOMContentLoaded", function () {
                 const startMonth = startMatch[2];
                 const startYear = startMatch[3];
                 const startTime = startMatch[4];
+
                 const endDay = endMatch[1].padStart(2, "0");
                 const endMonth = endMatch[2];
                 const endYear = endMatch[3];
                 const endTime = endMatch[4];
+
                 result.date = `${startYear}-${getMonthNumber(
                   startMonth
                 )}-${startDay}`;
@@ -1113,6 +1124,7 @@ document.addEventListener("DOMContentLoaded", function () {
               const year = dateMatch[3];
               const startTime = dateMatch[4];
               const endTime = dateMatch[5];
+
               result.date = `${year}-${getMonthNumber(month)}-${day}`;
               result.startTime = convertTo24Hour(startTime);
               result.endTime = convertTo24Hour(endTime);
@@ -1128,7 +1140,6 @@ document.addEventListener("DOMContentLoaded", function () {
           continue;
         }
 
-        // Section headers to detect Service Impact, Action Taken, or Chronology entries
         if (line === "Service Impact:" || line.startsWith("Service Impact:")) {
           currentSection = "serviceImpact";
           const contentAfterHeader = line
@@ -1198,6 +1209,8 @@ document.addEventListener("DOMContentLoaded", function () {
             const time = timeMatch[1];
             let message = timeMatch[2].trim();
             let status = "";
+
+            // Automatic detection of status (ignoring explicit NEXT_DAY marker)
             const statusMatch = message.match(/\[(Time|Done|时间)\]$/);
             if (statusMatch) {
               status =
@@ -1219,13 +1232,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (result.chronologyEntries.length > 0) {
         detectNextDayEntries(result.chronologyEntries);
-        // Optionally, if the last entry's time matches endTime, adjust timeStatus
-        const lastEntry =
-          result.chronologyEntries[result.chronologyEntries.length - 1];
-        if (lastEntry.time === result.endTime) {
-          result.timeStatus = "timeline";
-        }
       }
+
+      result.timeStatus = "custom";
 
       return result;
     } catch (error) {
@@ -1235,17 +1244,17 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  // Function to detect next day entries in an array of entries
+  // ---------------------------------------------------------------------------
+  // Next Day Detection: Mark timeline entries that belong to the next day
+  // ---------------------------------------------------------------------------
   function detectNextDayEntries(entries) {
     if (entries.length <= 1) return;
 
-    // Sort entries by time (but don't change their order in the array)
     const sortableEntries = [...entries].filter((entry) => !entry.hidden);
 
     let prevTimeMinutes = -1;
     let nextDayStartIndex = -1;
 
-    // Find when time goes backward
     for (let i = 0; i < sortableEntries.length; i++) {
       const entry = sortableEntries[i];
       const currentTimeMinutes = timeToMinutes(entry.time);
@@ -1258,16 +1267,12 @@ document.addEventListener("DOMContentLoaded", function () {
       prevTimeMinutes = currentTimeMinutes;
     }
 
-    // If we found a time going backward, mark all entries from that point on as next day
     if (nextDayStartIndex !== -1) {
       const nextDayEntries = sortableEntries.slice(nextDayStartIndex);
 
-      // Mark entries as next day
       entries.forEach((entry) => {
-        // Reset all nextDay flags first
+        // Reset the flag before applying
         entry.nextDay = false;
-
-        // If this entry is in the next day entries list, mark it
         if (
           nextDayEntries.find(
             (e) => e.time === entry.time && e.message === entry.message
@@ -1279,6 +1284,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
+  // ---------------------------------------------------------------------------
+  // Helper Functions: Count month occurrences and return corresponding month number
+  // ---------------------------------------------------------------------------
   function countMonthOccurrences(text) {
     const months = [
       "January",
@@ -1317,6 +1325,9 @@ document.addEventListener("DOMContentLoaded", function () {
     return months[monthName] || "01";
   }
 
+  // ---------------------------------------------------------------------------
+  // Fill Form with Imported Data: Populate form fields with parsed report data
+  // ---------------------------------------------------------------------------
   function fillFormWithImportedData(data) {
     if (!data) {
       alert(
@@ -1325,45 +1336,6 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    // Handle timeline-only imports
-    if (data.timelineOnly) {
-      if (data.chronologyEntries && data.chronologyEntries.length > 0) {
-        // Ask the user if they want to import the timeline entries.
-        // If the user cancels, abort the timeline import completely.
-        const confirmed = confirm(
-          `Detected ${data.chronologyEntries.length} timeline entries. Press OK to import these entries or Cancel to abort the import.`
-        );
-        if (!confirmed) {
-          return; // Abort: no changes are made to the timeline.
-        }
-
-        // If confirmed, append the new entries to the existing timeline.
-        chronologyEntries = [...chronologyEntries, ...data.chronologyEntries];
-        updateNextDayBasedOnTimeSequence();
-        updateChronologyInput();
-        updateChronologyPreview();
-
-        if (timeStatusSelect.value === "timeline") {
-          updateEndTimeFromLatestEntry();
-        }
-
-        formatAndPreview();
-        saveFormValues();
-
-        // Close the "Edit Incident Timeline" modal
-        chronologyModal.classList.add("hidden");
-
-        const originalButtonText = importButton.innerHTML;
-        importButton.innerHTML =
-          '<i class="fas fa-check mr-1"></i> Timeline Imported!';
-        setTimeout(() => {
-          importButton.innerHTML = originalButtonText;
-        }, 1500);
-        return;
-      }
-    }
-
-    // Full report import (populate all form fields)
     if (data.status) {
       incidentStatusSelect.value = data.status;
     }
@@ -1404,6 +1376,7 @@ document.addEventListener("DOMContentLoaded", function () {
         endTimeSection.classList.add("hidden");
       }
     }
+
     spansMidnightCheckbox.checked = data.spansMidnight || false;
     if (spansMidnightCheckbox.checked && timeStatusSelect.value === "custom") {
       endDateContainer.classList.remove("hidden");
@@ -1427,10 +1400,12 @@ document.addEventListener("DOMContentLoaded", function () {
       updateNextDayBasedOnTimeSequence();
       updateChronologyInput();
       updateChronologyPreview();
+
       if (timeStatusSelect.value === "timeline") {
         updateEndTimeFromLatestEntry();
       }
     }
+
     formatAndPreview();
     saveFormValues();
 
@@ -1442,6 +1417,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }, 1500);
   }
 
+  // ---------------------------------------------------------------------------
+  // Time Conversion Helpers
+  // ---------------------------------------------------------------------------
   function convertTo24Hour(timeStr) {
     const ampmMatch = timeStr.match(/^(\d{1,2}):(\d{2})(?:\s*(AM|PM))?$/i);
     if (ampmMatch) {
@@ -1467,6 +1445,9 @@ document.addEventListener("DOMContentLoaded", function () {
     return hours * 60 + minutes;
   }
 
+  // ---------------------------------------------------------------------------
+  // Format and Preview Report: Generate the formatted incident report
+  // ---------------------------------------------------------------------------
   function formatAndPreview() {
     const status = incidentStatusSelect.value;
     const issueTitle = issueTitleInput.value.trim();
@@ -1484,6 +1465,9 @@ document.addEventListener("DOMContentLoaded", function () {
     outputPreview.textContent = output;
   }
 
+  // ---------------------------------------------------------------------------
+  // Format Bullet Points: Convert multi-line text input into an array of strings
+  // ---------------------------------------------------------------------------
   function formatBulletPoints(text) {
     if (!text.trim()) return [];
     return text
@@ -1492,7 +1476,9 @@ document.addEventListener("DOMContentLoaded", function () {
       .filter((line) => line.length > 0);
   }
 
-  // Improved formatDateTime function to handle Next day properly
+  // ---------------------------------------------------------------------------
+  // Date and Time Formatting: Format the incident start and end date/time string
+  // ---------------------------------------------------------------------------
   function formatDateTime() {
     const dateValue = incidentDateInput.value;
     const startTimeValue = startTimeInput.value;
@@ -1524,14 +1510,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let endTimeFormatted = "";
 
-    // Handle Now status - check if we have entries first
     if (timeStatus === "now") {
       const visibleEntries = chronologyEntries.filter((entry) => !entry.hidden);
       if (visibleEntries.length > 0) {
         const lastEntry = visibleEntries[visibleEntries.length - 1];
         endTimeFormatted = formatTimeTo12Hour(lastEntry.time);
 
-        // Check if the last entry is marked as next day
         if (lastEntry.nextDay) {
           const nextDateObj = new Date(dateValue);
           nextDateObj.setDate(nextDateObj.getDate() + 1);
@@ -1543,15 +1527,12 @@ document.addEventListener("DOMContentLoaded", function () {
       } else {
         endTimeFormatted = "Now";
       }
-    }
-    // Handle Timeline status
-    else if (timeStatus === "timeline") {
+    } else if (timeStatus === "timeline") {
       const visibleEntries = chronologyEntries.filter((entry) => !entry.hidden);
       if (visibleEntries.length > 0) {
         const lastEntry = visibleEntries[visibleEntries.length - 1];
         endTimeFormatted = formatTimeTo12Hour(lastEntry.time);
 
-        // Check if the last entry is marked as next day
         if (lastEntry.nextDay) {
           const nextDateObj = new Date(dateValue);
           nextDateObj.setDate(nextDateObj.getDate() + 1);
@@ -1563,9 +1544,7 @@ document.addEventListener("DOMContentLoaded", function () {
       } else {
         endTimeFormatted = formatTimeTo12Hour(endTimeInput.value);
       }
-    }
-    // Handle Custom status
-    else {
+    } else {
       const spansMidnight = spansMidnightCheckbox.checked;
       const endDateValue = spansMidnight ? endDateInput.value : dateValue;
 
@@ -1584,6 +1563,9 @@ document.addEventListener("DOMContentLoaded", function () {
     return `${startDay} ${startMonth} ${startYear}, ${formattedStartTime} - ${endTimeFormatted}`;
   }
 
+  // ---------------------------------------------------------------------------
+  // Format Time to 12-Hour: Convert a "HH:MM" time string to 12-hour format with AM/PM
+  // ---------------------------------------------------------------------------
   function formatTimeTo12Hour(timeStr) {
     const [hours, minutes] = timeStr.split(":").map(Number);
     const period = hours >= 12 ? "PM" : "AM";
@@ -1591,7 +1573,9 @@ document.addEventListener("DOMContentLoaded", function () {
     return `${displayHours}:${minutes.toString().padStart(2, "0")} ${period}`;
   }
 
-  // Updated generateOutput without "Next day" text in the output
+  // ---------------------------------------------------------------------------
+  // Generate Formatted Output: Build the final incident report message.
+  // ---------------------------------------------------------------------------
   function generateOutput(
     status,
     issueTitle,
@@ -1639,8 +1623,6 @@ document.addEventListener("DOMContentLoaded", function () {
           } else if (entry.status === "[Done]") {
             statusText = "[Done]";
           }
-
-          // Removed the next day indicator from output
           output += `${entry.time} → ${entry.message} ${statusText}\n`;
         }
       }
@@ -1648,6 +1630,9 @@ document.addEventListener("DOMContentLoaded", function () {
     return output.trim();
   }
 
+  // ---------------------------------------------------------------------------
+  // Animate Form Submission: Change the button text to show processing status
+  // ---------------------------------------------------------------------------
   function animateFormSubmit() {
     const btn = form.querySelector('button[type="submit"]');
     btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Processing...';
@@ -1659,6 +1644,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }, 800);
   }
 
+  // ---------------------------------------------------------------------------
+  // Copy Report to Clipboard: Allow user to copy formatted report with feedback
+  // ---------------------------------------------------------------------------
   copyButton.addEventListener("click", function () {
     if (!outputPreview.textContent) return;
     navigator.clipboard
@@ -1684,6 +1672,9 @@ document.addEventListener("DOMContentLoaded", function () {
       });
   });
 
+  // ---------------------------------------------------------------------------
+  // Form Submission: Animate submission, update output preview, and save state
+  // ---------------------------------------------------------------------------
   form.addEventListener("submit", function (e) {
     e.preventDefault();
     animateFormSubmit();
@@ -1691,6 +1682,9 @@ document.addEventListener("DOMContentLoaded", function () {
     saveFormValues();
   });
 
+  // ---------------------------------------------------------------------------
+  // Extract Status Marker: Retrieve any status marker from a text string
+  // ---------------------------------------------------------------------------
   function extractStatusMarker(text) {
     const match = text.match(/\[(Time|Done|时间)\]$/);
     if (!match) return { message: text, status: "" };
@@ -1699,6 +1693,9 @@ document.addEventListener("DOMContentLoaded", function () {
     return { message, status };
   }
 
+  // ---------------------------------------------------------------------------
+  // Auto-Sort Timeline Entries: Re-sort timeline entries when toggled
+  // ---------------------------------------------------------------------------
   autoSortToggle.addEventListener("change", function () {
     if (this.checked && chronologyEntries.length > 0) {
       chronologyEntries.sort((a, b) => {
@@ -1714,6 +1711,9 @@ document.addEventListener("DOMContentLoaded", function () {
     saveFormValues();
   });
 
+  // ---------------------------------------------------------------------------
+  // Debounce Utility: Prevent excessive function calls (e.g., on input events)
+  // ---------------------------------------------------------------------------
   const debounce = (fn, delay) => {
     let timeoutId;
     return function (...args) {
@@ -1722,13 +1722,9 @@ document.addEventListener("DOMContentLoaded", function () {
     };
   };
 
-  const debouncedFormat = debounce(() => {
-    parseChronologyInput();
-    updateChronologyPreview();
-    formatAndPreview();
-    saveFormValues();
-  }, 500);
-
+  // ---------------------------------------------------------------------------
+  // Event Listeners for Live Formatting: Update output on input changes
+  // ---------------------------------------------------------------------------
   [
     incidentStatusSelect,
     issueTitleInput,
@@ -1747,6 +1743,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
   autoSortToggle.addEventListener("change", debouncedFormat);
 
+  // ---------------------------------------------------------------------------
+  // Close Modals on Outside Click: Hide modals when clicking outside
+  // ---------------------------------------------------------------------------
   document.addEventListener("click", function (e) {
     if (e.target === importModal) {
       importModal.classList.add("hidden");
@@ -1760,6 +1759,9 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
+  // ---------------------------------------------------------------------------
+  // Import Modal Handlers: Open, cancel, and confirm import of a formatted report
+  // ---------------------------------------------------------------------------
   importButton.addEventListener("click", function () {
     importModal.classList.remove("hidden");
     importText.focus();
@@ -1770,7 +1772,6 @@ document.addEventListener("DOMContentLoaded", function () {
     importText.value = "";
   });
 
-  // Update the confirm import handler to ensure next day detection
   confirmImport.addEventListener("click", function () {
     const importTextData = importText.value.trim();
     if (!importTextData) {
@@ -1783,6 +1784,9 @@ document.addEventListener("DOMContentLoaded", function () {
     importText.value = "";
   });
 
+  // ---------------------------------------------------------------------------
+  // Edit Entry Modal Handlers: Cancel or save changes in the edit modal
+  // ---------------------------------------------------------------------------
   cancelEditEntry.addEventListener("click", function () {
     editEntryModal.classList.add("hidden");
   });
@@ -1795,8 +1799,22 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
   resetButton.addEventListener("click", confirmReset);
+
+  // ---------------------------------------------------------------------------
+  // Load saved form values on startup
+  // ---------------------------------------------------------------------------
   loadFormValues();
   if (timeStatusSelect.value === "now") {
     endTimeSection.classList.add("hidden");
   }
+
+  // ---------------------------------------------------------------------------
+  // Debounced formatting to reduce excessive processing on input changes
+  // ---------------------------------------------------------------------------
+  const debouncedFormat = debounce(() => {
+    parseChronologyInput();
+    updateChronologyPreview();
+    formatAndPreview();
+    saveFormValues();
+  }, 500);
 });
