@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Documentation Formatter Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {},
+        },
+      };
+    </script>
+    <style>
+      /* Global background and body styling */
+      body {
+        background-color: #f0f2f5;
+        min-height: 100vh;
+      }
+      /* Dark mode body background */
+      .dark body {
+        background-color: #1a1a1a;
+      }
+
+      /* Card link styling to fill container and inherit text styles */
+      .card-link {
+        display: block;
+        text-decoration: none;
+        color: inherit;
+        height: 100%;
+      }
+
+      /* Base card styling */
+      .card {
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        background-color: white;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        height: 100%;
+        position: relative;
+      }
+      /* Card hover effects */
+      .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 14px 24px rgba(0, 0, 0, 0.12);
+        border-color: #4f46e5;
+      }
+      /* Transition and highlight effect for card icons on hover */
+      .card:hover .card-icon {
+        transform: scale(1.1);
+        color: #4338ca;
+      }
+      .card-icon {
+        transition: all 0.3s ease;
+      }
+      /* Adjustments for cards in dark mode */
+      .dark .card {
+        background-color: #2a2a2a;
+        border-color: rgba(255, 255, 255, 0.1);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      }
+      .dark .card:hover {
+        box-shadow: 0 14px 28px rgba(0, 0, 0, 0.3);
+        border-color: #6d28d9;
+      }
+      .dark .card:hover .card-icon {
+        color: #8b5cf6;
+      }
+      /* Pulsing animation for the logo icon */
+      .logo-pulse {
+        animation: pulse 2s infinite;
+      }
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+      /* Styling for the dark mode toggle switch */
+      .dark-toggle {
+        cursor: pointer;
+        position: relative;
+        width: 48px;
+        height: 24px;
+        border-radius: 12px;
+        background-color: #e2e8f0;
+        transition: all 0.3s ease;
+        border: 1px solid #cbd5e1;
+      }
+      /* Toggle knob styling */
+      .dark-toggle::after {
+        content: "";
+        position: absolute;
+        top: 2px;
+        left: 2px;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background-color: white;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+      }
+      /* Dark mode adjustments for the toggle switch */
+      .dark .dark-toggle {
+        background-color: #6d28d9;
+        border-color: #7c3aed;
+      }
+      .dark .dark-toggle::after {
+        left: 26px;
+        background-color: #f8fafc;
+      }
+    </style>
+  </head>
+  <body class="text-gray-700 dark:text-gray-300">
+    <div class="mx-auto px-4 py-6 max-w-7xl container">
+      <!-- Header Section -->
+      <header
+        class="mb-12 flex justify-between items-center bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700"
+      >
+        <div class="flex items-center space-x-3">
+          <div class="inline-block">
+            <i
+              class="text-indigo-600 dark:text-indigo-400 text-4xl fas fa-file-alt logo-pulse"
+            ></i>
+          </div>
+          <div>
+            <h1 class="font-bold text-indigo-900 dark:text-indigo-300 text-3xl">
+              Documentation Formatter Hub
+            </h1>
+            <p class="text-gray-600 dark:text-gray-400 text-sm">
+              Enterprise-grade tools for professional technical documentation
+            </p>
+          </div>
+        </div>
+        <div class="flex items-center space-x-2">
+          <i class="fas fa-sun text-yellow-400"></i>
+          <div id="darkModeToggle" class="dark-toggle"></div>
+          <i class="fas fa-moon text-gray-600 dark:text-gray-400"></i>
+        </div>
+      </header>
+
+      <!-- Main Content Section -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <!-- Activity Chronology Formatter Card -->
+        <a href="activity.html" class="card-link">
+          <div
+            class="card rounded-xl p-8 flex flex-col items-center text-center"
+          >
+            <div
+              class="mb-6 text-indigo-600 dark:text-indigo-400 text-6xl card-icon"
+            >
+              <i class="fas fa-calendar-check"></i>
+            </div>
+            <h2
+              class="text-2xl font-bold text-indigo-800 dark:text-indigo-300 mb-4"
+            >
+              Activity Chronology Formatter
+            </h2>
+            <p class="text-gray-600 dark:text-gray-400">
+              Record deployments, releases, and team activities with detailed
+              timestamps and progress tracking.
+            </p>
+          </div>
+        </a>
+
+        <!-- Incident Report Formatter Card -->
+        <a href="incident.html" class="card-link">
+          <div
+            class="card rounded-xl p-8 flex flex-col items-center text-center"
+          >
+            <div
+              class="mb-6 text-indigo-600 dark:text-indigo-400 text-6xl card-icon"
+            >
+              <i class="fas fa-fire-extinguisher"></i>
+            </div>
+            <h2
+              class="text-2xl font-bold text-indigo-800 dark:text-indigo-300 mb-4"
+            >
+              Incident Report Formatter
+            </h2>
+            <p class="text-gray-600 dark:text-gray-400">
+              Develop detailed incident reports including timelines, root cause
+              analysis, and resolution actions.
+            </p>
+          </div>
+        </a>
+      </div>
+
+      <!-- Footer Section -->
+      <footer
+        class="mt-12 py-4 text-gray-500 dark:text-gray-400 text-sm text-center bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700"
+      >
+        <p>
+          Documentation Formatter Hub • Technical Support Documentation Tools •
+          &copy; 2025
+        </p>
+      </footer>
+    </div>
+
+    <script>
+      // Initialize the dark mode toggle once the DOM content is fully loaded.
+      document.addEventListener("DOMContentLoaded", function () {
+        const darkModeToggle = document.getElementById("darkModeToggle");
+
+        // Always default to light mode if there's no stored dark mode preference.
+        const isDarkMode = localStorage.getItem("darkMode") === "true";
+
+        // Apply the preferred theme.
+        if (isDarkMode) {
+          document.documentElement.classList.add("dark");
+        } else {
+          document.documentElement.classList.remove("dark");
+        }
+
+        // Toggle between dark and light mode upon user interaction.
+        darkModeToggle.addEventListener("click", function () {
+          if (document.documentElement.classList.contains("dark")) {
+            document.documentElement.classList.remove("dark");
+            localStorage.setItem("darkMode", "false");
+          } else {
+            document.documentElement.classList.add("dark");
+            localStorage.setItem("darkMode", "true");
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
