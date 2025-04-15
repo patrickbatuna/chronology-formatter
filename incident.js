@@ -34,6 +34,8 @@ document.addEventListener("DOMContentLoaded", function () {
   let serviceImpactEntries = [];
   let actionTakenEntries = [];
 
+  let originalChronologyText = "";
+
   // DOM elements - Dark Mode
   const darkModeToggle = document.getElementById("darkModeToggle");
 
@@ -140,15 +142,24 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Chronology modal handlers
   chronologyButton.addEventListener("click", function () {
+    originalChronologyText = chronologiesInput.value;
     chronologyModal.classList.remove("hidden");
   });
 
   closeChronologyModal.addEventListener("click", function () {
+    chronologiesInput.value = originalChronologyText;
     chronologyModal.classList.add("hidden");
+    // Prevent automatic processing
+    parseChronologyInput();
+    updateChronologyPreview();
   });
 
   cancelChronology.addEventListener("click", function () {
+    chronologiesInput.value = originalChronologyText;
     chronologyModal.classList.add("hidden");
+    // Prevent automatic processing
+    parseChronologyInput();
+    updateChronologyPreview();
   });
 
   // Spans midnight checkbox listener
@@ -1322,8 +1333,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // Handle timeline-only imports
     if (data.timelineOnly) {
       if (data.chronologyEntries && data.chronologyEntries.length > 0) {
-        // Ask the user if they want to import the timeline entries.
-        // If the user cancels, abort the timeline import completely.
         const confirmed = confirm(
           `Detected ${data.chronologyEntries.length} timeline entries. Press OK to import these entries or Cancel to abort the import.`
         );
@@ -1331,8 +1340,8 @@ document.addEventListener("DOMContentLoaded", function () {
           return; // Abort: no changes are made to the timeline.
         }
 
-        // If confirmed, append the new entries to the existing timeline.
-        chronologyEntries = [...chronologyEntries, ...data.chronologyEntries];
+        // If confirmed, replace existing timeline with new entries
+        chronologyEntries = data.chronologyEntries;
         updateNextDayBasedOnTimeSequence();
         updateChronologyInput();
         updateChronologyPreview();
@@ -1730,7 +1739,6 @@ document.addEventListener("DOMContentLoaded", function () {
     startTimeInput,
     endTimeInput,
     rootCauseInput,
-    chronologiesInput,
     timeStatusSelect,
   ].forEach((input) => {
     input.addEventListener("input", debouncedFormat);
@@ -1771,11 +1779,60 @@ document.addEventListener("DOMContentLoaded", function () {
       alert("Please paste a formatted report to import.");
       return;
     }
+
+    // Parse the data first
     const parsedData = parseFormattedReport(importTextData);
-    fillFormWithImportedData(parsedData);
-    importModal.classList.add("hidden");
-    importText.value = "";
+    if (!parsedData) {
+      return; // Invalid data, already handled with an alert in the parse function
+    }
+
+    // Confirm before replacing existing data
+    if (confirm("Importing will replace all existing data. Continue?")) {
+      // Reset the form before importing
+      resetFormWithoutConfirmation();
+
+      // Now fill with imported data
+      fillFormWithImportedData(parsedData);
+      importModal.classList.add("hidden");
+      importText.value = "";
+    }
   });
+
+  function resetFormWithoutConfirmation() {
+    const now = new Date();
+    const currentHours = String(now.getHours()).padStart(2, "0");
+    const currentMinutes = String(now.getMinutes()).padStart(2, "0");
+    const currentTime = `${currentHours}:${currentMinutes}`;
+
+    // Reset all form fields
+    incidentStatusSelect.value = "OPEN";
+    issueTitleInput.value = "";
+    incidentDateInput.value = formattedDate;
+    startTimeInput.value = currentTime;
+    endTimeInput.value = currentTime;
+    rootCauseInput.value = "Still Investigating";
+
+    timeStatusSelect.value = "now";
+    endTimeSection.classList.add("hidden");
+    spansMidnightCheckbox.disabled = true;
+    endDateContainer.classList.add("hidden");
+    spansMidnightCheckbox.checked = false;
+    nextDayToggle.checked = false;
+
+    // Clear all entries
+    serviceImpactEntries = [];
+    actionTakenEntries = [];
+    chronologyEntries = [];
+
+    serviceImpactText.value = "";
+    actionTakenText.value = "";
+    chronologiesInput.value = "";
+
+    // Update all previews
+    updateServiceImpactPreview();
+    updateActionTakenPreview();
+    updateChronologyPreview();
+  }
 
   cancelEditEntry.addEventListener("click", function () {
     editEntryModal.classList.add("hidden");
