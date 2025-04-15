@@ -1527,26 +1527,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
     let endTimeFormatted = "";
 
-    // Handle Now status - check if we have entries first
+    // Handle Now status
     if (timeStatus === "now") {
-      const visibleEntries = chronologyEntries.filter((entry) => !entry.hidden);
-      if (visibleEntries.length > 0) {
-        const lastEntry = visibleEntries[visibleEntries.length - 1];
-        endTimeFormatted = formatTimeTo12Hour(lastEntry.time);
-
-        // Check if the last entry is marked as next day
-        if (lastEntry.nextDay) {
-          const nextDateObj = new Date(dateValue);
-          nextDateObj.setDate(nextDateObj.getDate() + 1);
-          const endDay = nextDateObj.getDate();
-          const endMonth = monthNames[nextDateObj.getMonth()];
-          const endYear = nextDateObj.getFullYear();
-          return `${startDay} ${startMonth} ${startYear}, ${formattedStartTime} - ${endDay} ${endMonth} ${endYear}, ${endTimeFormatted}`;
-        }
-      } else {
-        endTimeFormatted = "Now";
-      }
+      endTimeFormatted = "Now";
+      return `${startDay} ${startMonth} ${startYear}, ${formattedStartTime} - Now`;
     }
+
     // Handle Timeline status
     else if (timeStatus === "timeline") {
       const visibleEntries = chronologyEntries.filter((entry) => !entry.hidden);
