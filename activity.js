@@ -1309,6 +1309,10 @@ document.addEventListener("DOMContentLoaded", function () {
       alert("Please paste a formatted report to import.");
       return;
     }
+
+    if (!confirm("Importing will replace all existing data. Continue?")) {
+      return;
+    }
     const parsedData = parseFormattedReport(importTextData);
     fillFormWithImportedData(parsedData);
     importModal.classList.add("hidden");
