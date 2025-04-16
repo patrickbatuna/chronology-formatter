@@ -825,6 +825,11 @@ document.addEventListener("DOMContentLoaded", function () {
     formatAndPreview();
     saveFormValues();
     quickActionText.value = "";
+
+    // Uncheck the "In progress" and "Done" checkboxes after adding the entry
+    statusInProgress.checked = false;
+    statusDone.checked = false;
+
     const originalButtonText = addQuickAction.innerHTML;
     addQuickAction.innerHTML = '<i class="fas fa-check mr-2"></i> Added!';
     setTimeout(() => {
