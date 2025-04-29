@@ -229,6 +229,27 @@
         border-color: #312e81;
         background-color: rgba(79, 70, 229, 0.1);
       }
+
+      .copy-tooltip {
+  position: absolute;
+  background-color: #4ade80; /* green-400 */
+  color: white;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  z-index: 1000;
+  user-select: none;
+}
+
+.copy-tooltip.show {
+  opacity: 1;
+  transform: scale(1);
+}
     </style>
   </head>
   <body class="text-gray-700 dark:text-gray-300">
