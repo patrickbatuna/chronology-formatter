@@ -300,6 +300,48 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
+  chronologyPreview.addEventListener("dblclick", function (e) {
+    const entryDiv = e.target.closest(".chronology-entry");
+    if (!entryDiv) return;
+    const index = parseInt(entryDiv.dataset.index);
+    if (isNaN(index)) return;
+    const entry = chronologyEntries[index];
+    if (!entry) return;
+
+    navigator.clipboard
+      .writeText(entry.message)
+      .then(() => {
+        // Create tooltip element
+        const tooltip = document.createElement("div");
+        tooltip.className = "copy-tooltip";
+        tooltip.textContent = "Copied!";
+        document.body.appendChild(tooltip);
+
+        // Position tooltip near the entry
+        const rect = entryDiv.getBoundingClientRect();
+        tooltip.style.top = `${rect.top - 30 + window.scrollY}px`;
+        tooltip.style.left = `${rect.left + rect.width / 2 + window.scrollX}px`;
+        tooltip.style.transformOrigin = "center bottom";
+
+        // Show tooltip with animation
+        requestAnimationFrame(() => {
+          tooltip.classList.add("show");
+        });
+
+        // Hide and remove tooltip after 1 seconds
+        setTimeout(() => {
+          tooltip.classList.remove("show");
+          setTimeout(() => {
+            tooltip.remove();
+          }, 300);
+        }, 1000);
+      })
+      .catch((err) => {
+        console.error("Failed to copy action text:", err);
+        alert("Failed to copy action text.");
+      });
+  });
+
   /**
    * Opens the edit modal for the timeline entry at the given index.
    */
