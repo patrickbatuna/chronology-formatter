@@ -913,13 +913,13 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         const chronologyMatch = line.match(
-          /(\d{2}:\d{2})\s+→\s+(.*?)(\s+\[(Done|时间)\])?$/
+          /(\d{2}:\d{2})\s+→\s+(.*?)(\s+\[(Done|Time|时间)\])?$/
         );
         if (chronologyMatch) {
           const time = chronologyMatch[1];
           let message = chronologyMatch[2].trim();
           let status = chronologyMatch[3] ? chronologyMatch[3].trim() : "";
-          if (status === "[时间]") status = "[Time]";
+          if (status === "[时间]" || status === "[Time]") status = "[Time]";
           result.chronologies.push({
             time,
             message,

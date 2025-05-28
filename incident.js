@@ -1629,7 +1629,7 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!entry.hidden) {
           let statusText = "";
           if (entry.status === "[Time]") {
-            statusText = "[时间]";
+            statusText = "[Time]";
           } else if (entry.status === "[Done]") {
             statusText = "[Done]";
           }
