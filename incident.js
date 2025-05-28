@@ -142,24 +142,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Chronology modal handlers
   chronologyButton.addEventListener("click", function () {
-    originalChronologyText = chronologiesInput.value;
+    // Clear the textarea for adding new entries
+    chronologiesInput.value = "";
     chronologyModal.classList.remove("hidden");
   });
 
   closeChronologyModal.addEventListener("click", function () {
-    chronologiesInput.value = originalChronologyText;
     chronologyModal.classList.add("hidden");
-    // Prevent automatic processing
-    parseChronologyInput();
-    updateChronologyPreview();
   });
 
   cancelChronology.addEventListener("click", function () {
-    chronologiesInput.value = originalChronologyText;
     chronologyModal.classList.add("hidden");
-    // Prevent automatic processing
-    parseChronologyInput();
-    updateChronologyPreview();
   });
 
   // Spans midnight checkbox listener
@@ -176,15 +169,64 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   saveChronology.addEventListener("click", function () {
-    parseChronologyInput();
-    updateChronologyPreview();
+    // Parse new entries from the textarea (which is now for adding)
+    const newEntries = [];
+    const chronologyText = chronologiesInput.value.trim();
+    if (chronologyText) {
+      const lines = chronologyText
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter((line) => line !== "");
 
-    if (timeStatusSelect.value === "timeline" && chronologyEntries.length > 0) {
-      const visibleEntries = chronologyEntries.filter((entry) => !entry.hidden);
-      if (visibleEntries.length > 0) {
-        const lastEntry = visibleEntries[visibleEntries.length - 1];
-        endTimeInput.value = lastEntry.time;
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const timelineMatch = line.match(/^(\d{1,2}:\d{2})\s*→\s*(.+)$/);
+        if (timelineMatch) {
+          let fullText = timelineMatch[2].trim();
+          let status = "";
+          let message = fullText;
+          let hidden = false;
+
+          // Remove any existing [NEXT_DAY] markers (we'll detect them automatically)
+          if (fullText.includes("[NEXT_DAY]")) {
+            fullText = fullText.replace(/\[NEXT_DAY\]/g, "").trim();
+          }
+
+          if (fullText.includes("[HIDDEN]")) {
+            hidden = true;
+            fullText = fullText.replace(/\[HIDDEN\]/g, "").trim();
+          }
+
+          const statusMatch = fullText.match(/\[(Time|Done|时间)\]$/);
+          if (statusMatch) {
+            status =
+              statusMatch[1] === "时间" ? "[Time]" : `[${statusMatch[1]}]`;
+            message = fullText
+              .substring(0, fullText.length - statusMatch[0].length)
+              .trim();
+          }
+          newEntries.push({
+            time: timelineMatch[1],
+            message: message,
+            status: status,
+            hidden: hidden,
+            nextDay: false, // Will be set later
+          });
+        }
       }
+    }
+
+    // Append new entries to existing chronologyEntries
+    chronologyEntries = chronologyEntries.concat(newEntries);
+
+    // Update nextDay flags based on time sequence
+    updateNextDayBasedOnTimeSequence();
+
+    updateChronologyPreview();
+    updateChronologyInput();
+
+    if (timeStatusSelect.value === "timeline") {
+      updateEndTimeFromLatestEntry();
     }
 
     formatAndPreview();
