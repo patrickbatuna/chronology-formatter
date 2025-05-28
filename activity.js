@@ -93,6 +93,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Handle chronology modal open/close actions.
   chronologyButton.addEventListener("click", function () {
+    chronologiesInput.value = ""; // Clear textarea for new entries
     chronologyModal.classList.remove("hidden");
   });
   closeChronologyModal.addEventListener("click", function () {
@@ -103,17 +104,82 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   saveChronology.addEventListener("click", function () {
-    parseChronologyInput();
+    // Parse new entries from textarea
+    const newEntries = [];
+    const chronologyText = chronologiesInput.value.trim();
+    if (chronologyText) {
+      const lines = chronologyText.split("\n");
+      let currentTime = "";
+      let hidden = false;
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (!line) continue;
+        if (line.startsWith("-----")) continue;
+        const nameTimeMatch = line.match(/.*\s(\d{2}:\d{2})$/);
+        if (nameTimeMatch) {
+          currentTime = nameTimeMatch[1];
+          continue;
+        }
+        if (line.startsWith("#")) {
+          const prefixLength = line.startsWith("##") ? 2 : 1;
+          let message = line.substring(prefixLength).trim();
+          let status = "";
+          if (message.includes("[Time]")) {
+            status = "[Time]";
+            message = message.replace(/\[Time\]/g, "").trim();
+          } else if (message.includes("[Done]")) {
+            status = "[Done]";
+            message = message.replace(/\[Done\]/g, "").trim();
+          }
+          if (message.includes("[HIDDEN]")) {
+            hidden = true;
+            message = message.replace(/\[HIDDEN\]/g, "").trim();
+          } else {
+            hidden = false;
+          }
+          message = message.charAt(0).toUpperCase() + message.slice(1);
+          if (currentTime) {
+            const adjustedTime = deductOneHour(currentTime);
+            newEntries.push({
+              time: adjustedTime,
+              message: message,
+              status: status,
+              hidden: hidden,
+              nextDay: false, // default to false, will update below
+            });
+          }
+        }
+      }
+    }
+
+    // Append new entries to existing chronologyEntries
+    chronologyEntries = chronologyEntries.concat(newEntries);
+
+    // Optionally sort if autoSort is enabled
+    if (autoSortToggle.checked && chronologyEntries.length > 0) {
+      chronologyEntries.sort((a, b) => {
+        if (a.nextDay !== b.nextDay) {
+          return a.nextDay ? 1 : -1;
+        }
+        return timeToMinutes(a.time) - timeToMinutes(b.time);
+      });
+    }
+
+    // Update nextDay flags based on time sequence
+    updateNextDayBasedOnTimeSequence();
+
     updateChronologyPreview();
+    updateChronologyInput();
     if (timeStatusSelect.value === "endOfTimeline") {
       updateEndTimeFromTimelineMode();
     }
     formatAndPreview();
     saveFormValues();
     chronologyModal.classList.add("hidden");
+
     const originalButtonText = chronologyButton.innerHTML;
     chronologyButton.innerHTML =
-      '<i class="fas fa-check mr-2"></i> Chronology Updated';
+      '<i class="fas fa-check mr-2"></i> Chronology Added';
     setTimeout(() => {
       chronologyButton.innerHTML = originalButtonText;
     }, 1500);
