@@ -103,8 +103,8 @@ document.addEventListener("DOMContentLoaded", function () {
     chronologyModal.classList.add("hidden");
   });
 
+  // Save and append new entries from modal
   saveChronology.addEventListener("click", function () {
-    // Parse new entries from textarea
     const newEntries = [];
     const chronologyText = chronologiesInput.value.trim();
     if (chronologyText) {
@@ -115,47 +115,60 @@ document.addEventListener("DOMContentLoaded", function () {
         const line = lines[i].trim();
         if (!line) continue;
         if (line.startsWith("-----")) continue;
+
+        // Detect time header line (e.g. "Name 06:18")
         const nameTimeMatch = line.match(/.*\s(\d{2}:\d{2})$/);
         if (nameTimeMatch) {
           currentTime = nameTimeMatch[1];
           continue;
         }
+
+        // Parse entry line: can be with ## or plain text
+        // Remove leading # if present, else treat as plain text
+        let messageLine = line;
         if (line.startsWith("#")) {
           const prefixLength = line.startsWith("##") ? 2 : 1;
-          let message = line.substring(prefixLength).trim();
-          let status = "";
-          if (message.includes("[Time]")) {
-            status = "[Time]";
-            message = message.replace(/\[Time\]/g, "").trim();
-          } else if (message.includes("[Done]")) {
-            status = "[Done]";
-            message = message.replace(/\[Done\]/g, "").trim();
-          }
-          if (message.includes("[HIDDEN]")) {
-            hidden = true;
-            message = message.replace(/\[HIDDEN\]/g, "").trim();
-          } else {
-            hidden = false;
-          }
-          message = message.charAt(0).toUpperCase() + message.slice(1);
-          if (currentTime) {
-            const adjustedTime = deductOneHour(currentTime);
-            newEntries.push({
-              time: adjustedTime,
-              message: message,
-              status: status,
-              hidden: hidden,
-              nextDay: false, // default to false, will update below
-            });
-          }
+          messageLine = line.substring(prefixLength).trim();
+        }
+
+        // Extract status tags if any
+        let status = "";
+        if (messageLine.includes("[Time]")) {
+          status = "[Time]";
+          messageLine = messageLine.replace(/\[Time\]/g, "").trim();
+        } else if (messageLine.includes("[Done]")) {
+          status = "[Done]";
+          messageLine = messageLine.replace(/\[Done\]/g, "").trim();
+        }
+
+        if (messageLine.includes("[HIDDEN]")) {
+          hidden = true;
+          messageLine = messageLine.replace(/\[HIDDEN\]/g, "").trim();
+        } else {
+          hidden = false;
+        }
+
+        // Capitalize first letter
+        messageLine =
+          messageLine.charAt(0).toUpperCase() + messageLine.slice(1);
+
+        if (currentTime && messageLine) {
+          const adjustedTime = deductOneHour(currentTime);
+          newEntries.push({
+            time: adjustedTime,
+            message: messageLine,
+            status: status,
+            hidden: hidden,
+            nextDay: false,
+          });
         }
       }
     }
 
-    // Append new entries to existing chronologyEntries
+    // Append new entries
     chronologyEntries = chronologyEntries.concat(newEntries);
 
-    // Optionally sort if autoSort is enabled
+    // Sort if autoSort enabled
     if (autoSortToggle.checked && chronologyEntries.length > 0) {
       chronologyEntries.sort((a, b) => {
         if (a.nextDay !== b.nextDay) {
@@ -165,9 +178,7 @@ document.addEventListener("DOMContentLoaded", function () {
       });
     }
 
-    // Update nextDay flags based on time sequence
     updateNextDayBasedOnTimeSequence();
-
     updateChronologyPreview();
     updateChronologyInput();
     if (timeStatusSelect.value === "endOfTimeline") {
@@ -1085,7 +1096,7 @@ document.addEventListener("DOMContentLoaded", function () {
       if (!entry.hidden) {
         let statusText = "";
         if (entry.status === "[Time]") {
-          statusText = "[时间]";
+          statusText = "[Time]"; // Changed from "[时间]" to "[Time]"
         } else if (entry.status === "[Done]") {
           statusText = "[Done]";
         }
