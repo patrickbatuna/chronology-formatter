@@ -64,6 +64,15 @@ document.addEventListener("DOMContentLoaded", function () {
   let chronologyEntries = [];
 
   /**
+   * Deducts one hour from a time string "HH:MM" and returns adjusted time string.
+   */
+  function deductOneHour(timeStr) {
+    let [h, m] = timeStr.split(":").map(Number);
+    h = (h + 23) % 24; // subtract 1 hour, wrap around 0-23
+    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+  }
+
+  /**
    * Initializes dark mode based on the saved preference.
    */
   function initializeDarkMode() {
@@ -112,6 +121,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   /**
    * Parses the chronology input text into an array of entries.
+   * Deducts 1 hour from each time before storing.
    */
   function parseChronologyInput() {
     const chronologyText = chronologiesInput.value.trim();
@@ -149,13 +159,14 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         message = message.charAt(0).toUpperCase() + message.slice(1);
         if (currentTime) {
+          const adjustedTime = deductOneHour(currentTime);
           const matchingOriginal = originalEntries.find(
             (entry) =>
-              entry.time === currentTime &&
+              entry.time === adjustedTime &&
               entry.message.toLowerCase() === message.toLowerCase()
           );
           chronologyEntries.push({
-            time: currentTime,
+            time: adjustedTime,
             message: message,
             status: status,
             hidden: hidden,
@@ -1261,13 +1272,6 @@ document.addEventListener("DOMContentLoaded", function () {
     };
   };
 
-  const debouncedFormat = debounce(() => {
-    parseChronologyInput();
-    updateChronologyPreview();
-    formatAndPreview();
-    saveFormValues();
-  }, 500);
-
   const debouncedFormatOnly = debounce(() => {
     formatAndPreview();
     saveFormValues();
@@ -1290,7 +1294,8 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  chronologiesInput.addEventListener("input", debouncedFormat);
+  // Removed automatic debounce on chronology input to require Save Chronology button click
+  // chronologiesInput.addEventListener("input", debouncedFormat);
 
   const updateOnlyInputs = [
     meetingLinkType,
@@ -1325,7 +1330,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  autoSortToggle.addEventListener("change", debouncedFormat);
+  autoSortToggle.addEventListener("change", debouncedFormatOnly);
 
   document.addEventListener("click", function (e) {
     if (e.target === importModal) {
