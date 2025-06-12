@@ -42,8 +42,10 @@ document.addEventListener("DOMContentLoaded", function () {
   // DOM elements - Quick Actions
   const quickActionText = document.getElementById("quickActionText");
   const quickActionTime = document.getElementById("quickActionTime");
-  const statusInProgress = document.getElementById("statusInProgress");
-  const statusDone = document.getElementById("statusDone");
+  const statusInProgressBtn = document.getElementById("statusInProgressBtn");
+  const statusDoneBtn = document.getElementById("statusDoneBtn");
+  const statusInProgressCheckbox = document.getElementById("statusInProgress");
+  const statusDoneCheckbox = document.getElementById("statusDone");
   const addQuickAction = document.getElementById("addQuickAction");
   const refreshTimeBtn = document.getElementById("refreshTimeBtn");
   const chronologyPreview = document.getElementById("chronologyPreview");
@@ -166,6 +168,48 @@ document.addEventListener("DOMContentLoaded", function () {
       endDateContainer.classList.add("hidden");
     }
     debouncedFormat();
+  });
+
+  chronologyPreview.addEventListener("dblclick", function (e) {
+    const entryDiv = e.target.closest(".chronology-entry");
+    if (!entryDiv) return;
+    const index = parseInt(entryDiv.dataset.index);
+    if (isNaN(index)) return;
+    const entry = chronologyEntries[index];
+    if (!entry) return;
+
+    navigator.clipboard
+      .writeText(entry.message)
+      .then(() => {
+        // Create tooltip element
+        const tooltip = document.createElement("div");
+        tooltip.className = "copy-tooltip";
+        tooltip.textContent = "Copied!";
+        document.body.appendChild(tooltip);
+
+        // Position tooltip near the entry
+        const rect = entryDiv.getBoundingClientRect();
+        tooltip.style.top = `${rect.top - 30 + window.scrollY}px`;
+        tooltip.style.left = `${rect.left + rect.width / 2 + window.scrollX}px`;
+        tooltip.style.transformOrigin = "center bottom";
+
+        // Show tooltip with animation
+        requestAnimationFrame(() => {
+          tooltip.classList.add("show");
+        });
+
+        // Hide and remove tooltip after 1 seconds
+        setTimeout(() => {
+          tooltip.classList.remove("show");
+          setTimeout(() => {
+            tooltip.remove();
+          }, 300);
+        }, 1000);
+      })
+      .catch((err) => {
+        console.error("Failed to copy action text:", err);
+        alert("Failed to copy action text.");
+      });
   });
 
   saveChronology.addEventListener("click", function () {
@@ -802,17 +846,25 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  // Status checkbox exclusivity
-  statusInProgress.addEventListener("change", function () {
-    if (this.checked && statusDone.checked) {
-      statusDone.checked = false;
-    }
-  });
-  statusDone.addEventListener("change", function () {
-    if (this.checked && statusInProgress.checked) {
-      statusInProgress.checked = false;
-    }
-  });
+  if (statusInProgressCheckbox) {
+    statusInProgressCheckbox.addEventListener("change", function () {
+      if (this.checked && statusDoneCheckbox && statusDoneCheckbox.checked) {
+        statusDoneCheckbox.checked = false;
+      }
+    });
+  }
+
+  if (statusDoneCheckbox) {
+    statusDoneCheckbox.addEventListener("change", function () {
+      if (
+        this.checked &&
+        statusInProgressCheckbox &&
+        statusInProgressCheckbox.checked
+      ) {
+        statusInProgressCheckbox.checked = false;
+      }
+    });
+  }
 
   // Refresh time button
   refreshTimeBtn.addEventListener("click", function () {
@@ -825,7 +877,7 @@ document.addEventListener("DOMContentLoaded", function () {
   refreshEditTimeBtn.addEventListener("click", updateEditEntryTime);
 
   // Add quick action to chronologies – using global replacement to remove any "[NEXT_DAY]"
-  function addQuickActionToChronology() {
+  function addQuickActionToChronology(status = "") {
     let actionText = quickActionText.value.trim();
     if (!actionText) {
       alert("Please enter an action description");
@@ -834,12 +886,16 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     actionText = actionText.replace(/\[NEXT_DAY\]/gi, "").trim();
     const actionTime = quickActionTime.value;
-    let status = "";
-    if (statusInProgress.checked) {
-      status = "[Time]";
-    } else if (statusDone.checked) {
-      status = "[Done]";
+
+    // If status param is empty, check checkboxes safely
+    if (!status) {
+      if (statusInProgressCheckbox && statusInProgressCheckbox.checked) {
+        status = "[Time]";
+      } else if (statusDoneCheckbox && statusDoneCheckbox.checked) {
+        status = "[Done]";
+      }
     }
+
     chronologyEntries.push({
       time: actionTime,
       message: actionText,
@@ -869,14 +925,26 @@ document.addEventListener("DOMContentLoaded", function () {
     quickActionText.value = "";
 
     // Uncheck the "In progress" and "Done" checkboxes after adding the entry
-    statusInProgress.checked = false;
-    statusDone.checked = false;
+    if (statusInProgressCheckbox) statusInProgressCheckbox.checked = false;
+    if (statusDoneCheckbox) statusDoneCheckbox.checked = false;
 
     const originalButtonText = addQuickAction.innerHTML;
     addQuickAction.innerHTML = '<i class="fas fa-check mr-2"></i> Added!';
     setTimeout(() => {
       addQuickAction.innerHTML = originalButtonText;
     }, 1500);
+  }
+
+  // New handlers for status buttons
+  if (statusDoneBtn) {
+    statusDoneBtn.addEventListener("click", () => {
+      addQuickActionToChronology("[Done]");
+    });
+  }
+  if (statusInProgressBtn) {
+    statusInProgressBtn.addEventListener("click", () => {
+      addQuickActionToChronology("[Time]");
+    });
   }
 
   // Save form values to localStorage
@@ -1871,11 +1939,13 @@ document.addEventListener("DOMContentLoaded", function () {
     editEntryModal.classList.add("hidden");
   });
   saveEditEntry.addEventListener("click", saveEditedEntry);
-  addQuickAction.addEventListener("click", addQuickActionToChronology);
+  addQuickAction.addEventListener("click", () =>
+    addQuickActionToChronology("")
+  );
   quickActionText.addEventListener("keypress", function (e) {
     if (e.key === "Enter") {
       e.preventDefault();
-      addQuickActionToChronology();
+      addQuickActionToChronology("");
     }
   });
   resetButton.addEventListener("click", confirmReset);
