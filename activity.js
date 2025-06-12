@@ -11,6 +11,9 @@ document.addEventListener("DOMContentLoaded", function () {
   const meetingLink = document.getElementById("meetingLink");
   const deploymentLink = document.getElementById("deploymentLink");
   const sanityLink = document.getElementById("sanityLink");
+  const releaseManagerPIC = document.getElementById("releaseManagerPIC");
+  const developerPIC = document.getElementById("developerPIC");
+  const impactedDomain = document.getElementById("impactedDomain");
   const chronologiesInput = document.getElementById("chronologies");
   const outputPreview = document.getElementById("outputPreview");
   const copyButton = document.getElementById("copyButton");
@@ -618,6 +621,9 @@ document.addEventListener("DOMContentLoaded", function () {
       meetingLink: meetingLink.value,
       deploymentLink: deploymentLink.value,
       sanityLink: sanityLink.value,
+      releaseManagerPIC: releaseManagerPIC.value,
+      developerPIC: developerPIC.value,
+      impactedDomain: impactedDomain.value,
       chronologiesText: chronologiesInput.value,
       chronologyEntries: chronologyEntries,
       autoSort: autoSortToggle.checked,
@@ -643,6 +649,9 @@ document.addEventListener("DOMContentLoaded", function () {
       meetingLink.value = values.meetingLink || "";
       deploymentLink.value = values.deploymentLink || "";
       sanityLink.value = values.sanityLink || "";
+      releaseManagerPIC.value = values.releaseManagerPIC || "";
+      developerPIC.value = values.developerPIC || "";
+      impactedDomain.value = values.impactedDomain || "";
       if (values.chronologyEntries && values.chronologyEntries.length > 0) {
         chronologyEntries = values.chronologyEntries;
       } else {
@@ -677,6 +686,9 @@ document.addEventListener("DOMContentLoaded", function () {
     } else {
       activityDateInput.value = formattedDate;
       activityTimeInput.value = defaultTime;
+      releaseManagerPIC.value = "";
+      developerPIC.value = "";
+      impactedDomain.value = "";
     }
   }
 
@@ -698,6 +710,9 @@ document.addEventListener("DOMContentLoaded", function () {
       meetingLink.value = "";
       deploymentLink.value = "";
       sanityLink.value = "";
+      releaseManagerPIC.value = "";
+      developerPIC.value = "";
+      impactedDomain.value = "";
       chronologiesInput.value = "";
       autoSortToggle.checked = true;
       quickActionText.value = "";
@@ -758,6 +773,9 @@ document.addEventListener("DOMContentLoaded", function () {
         meetingLink: "",
         deploymentLink: "",
         sanityLink: "",
+        releaseManagerPIC: "",
+        developerPIC: "",
+        impactedDomain: "",
       };
 
       let waitingForLink = null;
@@ -792,6 +810,38 @@ document.addEventListener("DOMContentLoaded", function () {
             waitingForLink = null;
             continue;
           }
+        }
+
+        // Parse Release Manager PIC
+        const releaseManagerMatch = line.match(
+          /^Release Manager PIC:\s*(.*)$/i
+        );
+        if (releaseManagerMatch) {
+          result.releaseManagerPIC = releaseManagerMatch[1].trim();
+          if (!result.releaseManagerPIC) {
+            result.releaseManagerPIC = getNextNonEmptyLine(i);
+          }
+          continue;
+        }
+
+        // Parse Developer PIC
+        const developerPICMatch = line.match(/^Developer PIC:\s*(.*)$/i);
+        if (developerPICMatch) {
+          result.developerPIC = developerPICMatch[1].trim();
+          if (!result.developerPIC) {
+            result.developerPIC = getNextNonEmptyLine(i);
+          }
+          continue;
+        }
+
+        // Parse Impacted Domain
+        const impactedDomainMatch = line.match(/^Impacted Domain:\s*(.*)$/i);
+        if (impactedDomainMatch) {
+          result.impactedDomain = impactedDomainMatch[1].trim();
+          if (!result.impactedDomain) {
+            result.impactedDomain = getNextNonEmptyLine(i);
+          }
+          continue;
         }
 
         const activityMatch = line.match(/^Activity:\s*(.*)$/i);
@@ -1025,6 +1075,15 @@ document.addEventListener("DOMContentLoaded", function () {
     if (data.sanityLink) {
       sanityLink.value = data.sanityLink;
     }
+    if (data.releaseManagerPIC) {
+      releaseManagerPIC.value = data.releaseManagerPIC;
+    }
+    if (data.developerPIC) {
+      developerPIC.value = data.developerPIC;
+    }
+    if (data.impactedDomain) {
+      impactedDomain.value = data.impactedDomain;
+    }
     if (data.chronologies && data.chronologies.length > 0) {
       chronologyEntries = data.chronologies.map((entry) => ({
         ...entry,
@@ -1057,6 +1116,9 @@ document.addEventListener("DOMContentLoaded", function () {
     meetingLink.value = "";
     deploymentLink.value = "";
     sanityLink.value = "";
+    releaseManagerPIC.value = "";
+    developerPIC.value = "";
+    impactedDomain.value = "";
     chronologiesInput.value = "";
     autoSortToggle.checked = true;
     quickActionText.value = "";
@@ -1087,16 +1149,30 @@ document.addEventListener("DOMContentLoaded", function () {
     meetingType,
     meetingLink,
     deploymentLinkValue,
-    sanityLinkValue
+    sanityLinkValue,
+    releaseManagerPICValue,
+    developerPICValue,
+    impactedDomainValue
   ) {
-    let output = `Activity: \n${activity}\n`;
-    output += `Date / Time: ${dateTime}\n \n`;
-    output += `Activity Timeline & Chronology\n\n`;
+    let output = `Activity: \n${activity}\n\n`;
+    output += `Date / Time: ${dateTime}\n\n`;
+
+    if (releaseManagerPICValue) {
+      output += `Release Manager PIC: ${releaseManagerPICValue}\n\n`;
+    }
+    if (developerPICValue) {
+      output += `Developer PIC: ${developerPICValue}\n\n`;
+    }
+    if (impactedDomainValue) {
+      output += `Impacted Domain: ${impactedDomainValue}\n\n`;
+    }
+
+    output += `Activity Timeline & Chronology:\n`;
     for (const entry of entries) {
       if (!entry.hidden) {
         let statusText = "";
         if (entry.status === "[Time]") {
-          statusText = "[Time]"; // Changed from "[时间]" to "[Time]"
+          statusText = "[时间]";
         } else if (entry.status === "[Done]") {
           statusText = "[Done]";
         }
@@ -1104,13 +1180,13 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }
     if (meetingLink) {
-      output += `\nLink ${meetingType}: ${meetingLink}\n`;
+      output += `\nLink ${meetingType}:\n${meetingLink}\n`;
     }
     if (deploymentLinkValue) {
-      output += `Link Deployment: ${deploymentLinkValue}\n`;
+      output += `\nLink Deployment:\n${deploymentLinkValue}\n`;
     }
     if (sanityLinkValue) {
-      output += `Link Sanity: ${sanityLinkValue}`;
+      output += `\nLink Sanity:\n${sanityLinkValue}`;
     }
     return output.trim();
   }
@@ -1286,6 +1362,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const meetingLinkValue = meetingLink.value.trim();
     const deploymentLinkValue = deploymentLink.value.trim();
     const sanityLinkValue = sanityLink.value.trim();
+    const releaseManagerPICValue = releaseManagerPIC.value.trim();
+    const developerPICValue = developerPIC.value.trim();
+    const impactedDomainValue = impactedDomain.value.trim();
 
     const output = generateOutput(
       activity,
@@ -1294,7 +1373,10 @@ document.addEventListener("DOMContentLoaded", function () {
       meetingTypeValue,
       meetingLinkValue,
       deploymentLinkValue,
-      sanityLinkValue
+      sanityLinkValue,
+      releaseManagerPICValue,
+      developerPICValue,
+      impactedDomainValue
     );
     outputPreview.textContent = output;
   }
@@ -1362,6 +1444,9 @@ document.addEventListener("DOMContentLoaded", function () {
     meetingLink,
     deploymentLink,
     sanityLink,
+    releaseManagerPIC,
+    developerPIC,
+    impactedDomain,
   ];
 
   formInputs.forEach((input) => {
@@ -1379,6 +1464,9 @@ document.addEventListener("DOMContentLoaded", function () {
     meetingLink,
     deploymentLink,
     sanityLink,
+    releaseManagerPIC,
+    developerPIC,
+    impactedDomain,
   ];
 
   updateOnlyInputs.forEach((input) => {
