@@ -30,8 +30,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   const quickActionText = document.getElementById("quickActionText");
   const quickActionTime = document.getElementById("quickActionTime");
-  const statusInProgress = document.getElementById("statusInProgress");
-  const statusDone = document.getElementById("statusDone");
   const addQuickAction = document.getElementById("addQuickAction");
   const refreshTimeBtn = document.getElementById("refreshTimeBtn");
   const chronologyPreview = document.getElementById("chronologyPreview");
@@ -59,6 +57,10 @@ document.addEventListener("DOMContentLoaded", function () {
   const closeChronologyModal = document.getElementById("closeChronologyModal");
   const saveChronology = document.getElementById("saveChronology");
   const cancelChronology = document.getElementById("cancelChronology");
+
+  // New buttons for status actions
+  const statusDoneBtn = document.getElementById("statusDoneBtn");
+  const statusInProgressBtn = document.getElementById("statusInProgressBtn");
 
   const now = new Date();
   const formattedDate = now.toISOString().split("T")[0];
@@ -538,17 +540,6 @@ document.addEventListener("DOMContentLoaded", function () {
     chronologiesInput.value = result.trim();
   }
 
-  statusInProgress.addEventListener("change", function () {
-    if (this.checked && statusDone.checked) {
-      statusDone.checked = false;
-    }
-  });
-  statusDone.addEventListener("change", function () {
-    if (this.checked && statusInProgress.checked) {
-      statusInProgress.checked = false;
-    }
-  });
-
   refreshTimeBtn.addEventListener("click", function () {
     updateQuickActionTime();
     this.classList.add("animate-pulse");
@@ -562,18 +553,12 @@ document.addEventListener("DOMContentLoaded", function () {
   /**
    * Adds a new quick action entry to the chronology.
    */
-  function addQuickActionToChronology() {
+  function addQuickActionToChronology(status = "") {
     const actionText = quickActionText.value.trim();
     if (!actionText) {
       alert("Please enter an action description");
       quickActionText.focus();
       return;
-    }
-    let status = "";
-    if (statusInProgress.checked) {
-      status = "[Time]";
-    } else if (statusDone.checked) {
-      status = "[Done]";
     }
     chronologyEntries.push({
       time: quickActionTime.value,
@@ -595,16 +580,25 @@ document.addEventListener("DOMContentLoaded", function () {
     formatAndPreview();
     saveFormValues();
     quickActionText.value = "";
-
-    // Uncheck the "In progress" and "Done" checkboxes after adding the entry.
-    statusInProgress.checked = false;
-    statusDone.checked = false;
+    nextDayToggle.checked = false;
 
     const originalButtonText = addQuickAction.innerHTML;
     addQuickAction.innerHTML = '<i class="fas fa-check mr-2"></i> Added!';
     setTimeout(() => {
       addQuickAction.innerHTML = originalButtonText;
     }, 1500);
+  }
+
+  // New handlers for status buttons
+  if (statusDoneBtn) {
+    statusDoneBtn.addEventListener("click", () => {
+      addQuickActionToChronology("[Done]");
+    });
+  }
+  if (statusInProgressBtn) {
+    statusInProgressBtn.addEventListener("click", () => {
+      addQuickActionToChronology("[Time]");
+    });
   }
 
   /**
@@ -717,8 +711,6 @@ document.addEventListener("DOMContentLoaded", function () {
       autoSortToggle.checked = true;
       quickActionText.value = "";
       updateQuickActionTime();
-      statusInProgress.checked = false;
-      statusDone.checked = false;
       nextDayToggle.checked = false;
       endTimeContainer.classList.add("hidden");
       localStorage.removeItem("chronologyFormData");
@@ -1123,8 +1115,6 @@ document.addEventListener("DOMContentLoaded", function () {
     autoSortToggle.checked = true;
     quickActionText.value = "";
     updateQuickActionTime();
-    statusInProgress.checked = false;
-    statusDone.checked = false;
     nextDayToggle.checked = false;
     endTimeContainer.classList.add("hidden");
     chronologyEntries = [];
@@ -1171,8 +1161,9 @@ document.addEventListener("DOMContentLoaded", function () {
     for (const entry of entries) {
       if (!entry.hidden) {
         let statusText = "";
-        if (entry.status === "[Time]") {
-          statusText = "[时间]";
+        if (entry.status === "[Time]" || entry.status === "[时间]") {
+          // Always output [Time] instead of [时间]
+          statusText = "[Time]";
         } else if (entry.status === "[Done]") {
           statusText = "[Done]";
         }
@@ -1540,11 +1531,14 @@ document.addEventListener("DOMContentLoaded", function () {
     editEntryModal.classList.add("hidden");
   });
   saveEditEntry.addEventListener("click", saveEditedEntry);
-  addQuickAction.addEventListener("click", addQuickActionToChronology);
+  addQuickAction.addEventListener("click", () =>
+    addQuickActionToChronology("")
+  );
+
   quickActionText.addEventListener("keypress", function (e) {
     if (e.key === "Enter") {
       e.preventDefault();
-      addQuickActionToChronology();
+      addQuickActionToChronology("");
     }
   });
   resetButton.addEventListener("click", confirmReset);
